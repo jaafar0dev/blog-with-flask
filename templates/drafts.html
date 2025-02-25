@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blog List</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        margin: 40px;
+      }
+      .container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #007bff;
+        text-align: center;
+      }
+      .blog-list {
+        list-style: none;
+        padding: 0;
+      }
+      .blog-item {
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+      }
+      .blog-item:last-child {
+        border-bottom: none;
+      }
+      .blog-title {
+        font-size: 1.2rem;
+        color: #333;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      .blog-title:hover {
+        color: #007bff;
+      }
+      .blog-date {
+        color: #6c757d;
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Drafts</h1>
+      {% if drafts %}
+      <ul class="blog-list">
+        {% for draft in drafts %}
+        <li class="blog-item">
+          <a
+            href="{{ url_for('view_blog', blog_id=blog[4]) }}"
+            class="blog-title"
+            >{{ blog[1] }}</a
+          >
+          <p class="blog-details">{{ blog[2] }}</p>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No drafts available.</p>
+      {% endif %}
+    </div>
+  </body>
+</html>

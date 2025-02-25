@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background-color: #f0f4f8;
+        font-family: Arial, sans-serif;
+      }
+      .dashboard-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 400px;
+        text-align: center;
+      }
+      h2 {
+        color: #007bff;
+        margin-bottom: 1rem;
+      }
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      .btn {
+        width: 100%;
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        margin-top: 10px;
+      }
+      .btn:hover {
+        background: #0056b3;
+      }
+      .top-btn {
+        margin-bottom: 1rem;
+        background: #28a745;
+      }
+      .top-btn:hover {
+        background: #218838;
+      }
+      #thumbnail-preview {
+        width: 100%;
+        max-height: 200px;
+        margin-top: 10px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- <a href="{{url_for('drafts')}}" class="btn top-btn">View Drafts</button> -->
+      <a class="btn top-btn" href="{{url_for('blogs')}}">View Blogs</a>
+      <a
+        style="background-color: red"
+        class="btn top-btn"
+        href="{{url_for('logout')}}"
+      >
+        Logout
+      </a>
+
+      <h2>Create Blog Content</h2>
+      <form
+        method="post"
+        action="/publish_blog"
+        enctype="multipart/form-data"
+        onsubmit="submitBlog()"
+      >
+        <input
+          type="file"
+          name="thumbnail"
+          accept="image/*"
+          id="thumbnail-input"
+          required
+        />
+        <img id="thumbnail-preview" alt="Thumbnail Preview" />
+        <input
+          name="blog_title"
+          id="blog_title"
+          type="text"
+          placeholder="Blog Title"
+          required
+        />
+        <textarea
+          name="blog_details"
+          id="blog_details"
+          placeholder="Write your blog content here..."
+          rows="6"
+          required
+        ></textarea>
+        <button type="submit" class="btn">Publish</button>
+      </form>
+    </div>
+
+    <script>
+      function submitBlog() {
+        alert("Blog Published Successfully!");
+        return true;
+      }
+      function saveDraft() {
+        alert("Draft saved successfully!");
+        return true;
+      }
+      document
+        .getElementById("thumbnail-input")
+        .addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              const preview = document.getElementById("thumbnail-preview");
+              preview.src = e.target.result;
+              preview.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+
+      function validateForm() {
+        const title = document.getElementById("blog_title").value.trim();
+        const details = document.getElementById("blog_details").value.trim();
+        const fileInput = document.getElementById("thumbnail-input");
+
+        if (title.length < 5) {
+          alert("Blog title must be at least 5 characters long.");
+          return false;
+        }
+
+        if (details.length < 20) {
+          alert("Blog content must be at least 20 characters long.");
+          return false;
+        }
+
+        if (fileInput.files.length === 0) {
+          alert("Please upload a thumbnail image.");
+          return false;
+        }
+
+        return true;
+      }
+    </script>
+  </body>
+</html>

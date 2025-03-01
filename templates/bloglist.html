@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blog List</title>
+    <title>My Blog</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -50,10 +50,13 @@
   </head>
   <body>
     <div class="container">
-      <h1>Blog List</h1>
-      {% if blogs %}
+      {% if name %}
+      <h1>{{name}}'s Blog</h1>
+      {% else %}
+      <h1>My Blog</h1>
+      {% endif %} {% if blogs %}
       <ul class="blog-list">
-        {% for blog in blogs %}
+        {% for blog in blogs %} {% for content in content %}
         <li class="blog-item">
           <img
             src="{{ url_for('static', filename='uploads/' + blog[5]) }}"
@@ -65,13 +68,16 @@
             class="blog-title"
             >{{ blog[1] }}</a
           >
+          <p>{{content}}</p>
           <p class="blog-date">Published on: {{ blog[3] }}</p>
         </li>
-        {% endfor %}
+        {% endfor %} {% endfor %}
       </ul>
+      {% else %} {% if name %}
+      <p>{{name}} hasn't made any blog posts yet.</p>
       {% else %}
-      <p>No blogs available.</p>
-      {% endif %}
+      <p>You haven't made any blog posts yet!</p>
+      {% endif %} {% endif %}
     </div>
   </body>
 </html>

@@ -1,18 +1,29 @@
-from flask import Flask, redirect, render_template, request, send_from_directory, session, url_for
+from flask import Flask, redirect, render_template, request, session, url_for
 import sqlite3
 import datetime
 import uuid
+import math
 import os
-from werkzeug.security import safe_join
 
 app = Flask(__name__)
-DB_PATH = "data.db"
-app.secret_key = "4c687e38-642c-4c94-90b9-e1424c6997a1"  # Required for session management
-directory = "templates/blogs"
-upload_folder = "static/uploads"
-os.makedirs(upload_folder, exist_ok=True)
-os.makedirs(directory, exist_ok=True)
+DB_PATH = "data.db" # Replace with appropriate path you want the sqlite database to exist.
+app.secret_key = "4c687e38-642c-4c94-90b9-e1424c6997a1"  # Required for session management, generated using uuid4
 
+blog_directory = "templates/blogs" # Directory to store blog pages
+upload_folder = "static/uploads" # Directory to store uploaded images for thumbnails
+
+
+os.makedirs(upload_folder, exist_ok=True)
+os.makedirs(blog_directory, exist_ok=True)
+
+#admin username and password to login to your blog
+admin_username = "admin" 
+admin_password = "admin"
+
+#This name appears on the blog list, customizable for anyone
+name = "Jaafar"
+
+#function to create and initialize sqlite database
 def init_db():
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
@@ -35,6 +46,14 @@ def init_db():
                 password TEXT
             )
         """)
+
+        cursor.execute(
+        """
+            INSERT INTO admin_details (username, password) values (?,?)
+        """, (admin_username, admin_password))
+
+        conn.commit()
+
 try:
     init_db()
 except Exception as e:
@@ -43,11 +62,35 @@ except Exception as e:
 
 @app.route('/')
 def hello():
-    return "Hello"
+    with sqlite3.connect(DB_PATH) as conn:
+        blogs = conn.execute(
+        """
+            SELECT * FROM blog_data ORDER BY id DESC
+        """).fetchall()
+
+        blog_details = conn.execute(
+        """
+            SELECT blog_details FROM blog_data ORDER BY id DESC
+        """).fetchall()
+
+        def cut(content):
+            lis = []
+            for i in content:
+                a = i[0]
+                l = math.ceil(30 + math.log(len(a)) * 20)
+                a = a[0:l] + "..."
+                lis.append(a)
+            return lis
+        
+        content = cut(blog_details)
+
+    return render_template('bloglist.html', blogs=blogs, name=name, content=content)
 
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
+    if session.get('admin_logged_in'):
+        return redirect(url_for('dashboard'))
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
@@ -81,7 +124,23 @@ def blogs():
             SELECT * FROM blog_data ORDER BY id DESC
         """).fetchall()
 
-    return render_template('bloglist.html', blogs=blogs)
+        blog_details = conn.execute(
+        """
+            SELECT blog_details FROM blog_data ORDER BY id DESC
+        """).fetchall()
+
+        def cut(content):
+            lis = []
+            for i in content:
+                a = i[0]
+                l = math.ceil(30 + math.log(len(a)) * 20)
+                a = a[0:l] + "..."
+                lis.append(a)
+            return lis
+        
+        content = cut(blog_details)
+
+    return render_template('bloglist.html', blogs=blogs, content=content, name=name)
 
 @app.route('/view_blog/<blog_id>')
 def view_blog(blog_id):
@@ -112,8 +171,7 @@ def publish():
 
             """, (blog_title, blog_details, blog_date, blog_id, image_filename))
 
-            os.makedirs(directory, exist_ok=True)
-            file_path = os.path.join(directory, filename)
+            file_path = os.path.join(blog_directory, filename)
             with open(file_path, 'w') as blog_file:
                 blog_file.write(f"""
         <!DOCTYPE html>

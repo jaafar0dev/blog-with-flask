@@ -14,6 +14,12 @@ You can host this as an application on any python compatible system, a perfect e
 on *app.py*, edit the name for the name of your blog, admin name and password also and deploy it. You can also
 style it to your taste using css and html.
 
+**Routes**
+
+"domain"/dashboard - This is where you can create blog posts
+"domain"/admin - This is where you login as an admin, the default password and username is "admin"
+"domain"/ is where viewers can see all your blog posts.
+
 
 
 

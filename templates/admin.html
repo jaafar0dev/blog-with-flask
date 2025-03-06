@@ -12,13 +12,14 @@
         height: 100vh;
         background-color: #f0f4f8;
         font-family: Arial, sans-serif;
+        margin: 0;
       }
       .login-container {
         background: white;
         padding: 2rem;
         border-radius: 10px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        width: 300px;
+        width: 320px;
         text-align: center;
       }
       h2 {
@@ -27,23 +28,44 @@
       }
       input {
         width: 100%;
-        padding: 10px;
+        padding: 12px;
         margin: 10px 0;
         border: 1px solid #ccc;
-        border-radius: 5px;
+        border-radius: 6px;
+        font-size: 1rem;
+        outline: none;
+      }
+      input:focus {
+        border-color: #007bff;
+        box-shadow: none; /* Removes default mobile focus highlight */
       }
       .login-btn {
         width: 100%;
         background: #007bff;
         color: white;
         border: none;
-        padding: 10px;
-        border-radius: 5px;
+        padding: 12px;
+        border-radius: 6px;
         cursor: pointer;
         font-size: 1rem;
+        transition: background 0.3s ease;
       }
       .login-btn:hover {
         background: #0056b3;
+      }
+      /* Prevent focus highlight on mobile */
+      input,
+      button {
+        -webkit-tap-highlight-color: transparent;
+      }
+      @media (max-width: 400px) {
+        .login-container {
+          width: 90%;
+          padding: 1.5rem;
+        }
+        input {
+          font-size: 0.95rem;
+        }
       }
     </style>
   </head>
@@ -51,12 +73,19 @@
     <div class="login-container">
       <h2>Sassari's Blog Login</h2>
       <form method="post" action="{{url_for('admin')}}">
-        <input name="username" type="text" placeholder="Username" required />
+        <input
+          name="username"
+          type="text"
+          placeholder="Username"
+          required
+          autocomplete="off"
+        />
         <input
           name="password"
           type="password"
           placeholder="Password"
           required
+          autocomplete="off"
         />
         <button type="submit" class="login-btn">Login</button>
       </form>

@@ -12,7 +12,6 @@ app.secret_key = "4c687e38-642c-4c94-90b9-e1424c6997a1"  # Required for session 
 blog_directory = "templates/blogs" # Directory to store blog pages
 upload_folder = "static/uploads" # Directory to store uploaded images for thumbnails
 
-
 os.makedirs(upload_folder, exist_ok=True)
 os.makedirs(blog_directory, exist_ok=True)
 
@@ -58,34 +57,32 @@ try:
     init_db()
 except Exception as e:
     print(str(e))
-    
 
 @app.route('/')
 def hello():
     with sqlite3.connect(DB_PATH) as conn:
         blogs = conn.execute(
-        """
+            """
             SELECT * FROM blog_data ORDER BY id DESC
-        """).fetchall()
+            """
+        ).fetchall()
 
-        blog_details = conn.execute(
-        """
-            SELECT blog_details FROM blog_data ORDER BY id DESC
-        """).fetchall()
+        def cut(blogs):
+            content_map = {}  # Store previews mapped to blog ID
+            for blog in blogs:
+                blog_id = blog[0]  # Assuming ID is the first column
+                text = blog[2]  # Assuming blog content is the third column
 
-        def cut(content):
-            lis = []
-            for i in content:
-                a = i[0]
-                l = math.ceil(30 + math.log(len(a)) * 20)
-                a = a[0:l] + "..."
-                lis.append(a)
-            return lis
-        
-        content = cut(blog_details)
+                preview_length = math.ceil(30 + math.log(len(text)) * 20)
+                preview_text = text[:preview_length] + "..."
+                
+                content_map[blog_id] = preview_text  # Map preview to blog ID
+            
+            return content_map
 
-    return render_template('bloglist.html', blogs=blogs, name=name, content=content)
+        content_map = cut(blogs)
 
+    return render_template('bloglist.html', blogs=blogs, name=name, content_map=content_map)
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
@@ -118,29 +115,31 @@ def dashboard():
 
 @app.route('/blogs')
 def blogs():
-    with sqlite3.connect(DB_PATH) as conn:
-        blogs = conn.execute(
-        """
-            SELECT * FROM blog_data ORDER BY id DESC
-        """).fetchall()
+    if session.get("admin_logged_in"):
+        with sqlite3.connect(DB_PATH) as conn:
+            blogs = conn.execute(
+                """
+                SELECT * FROM blog_data ORDER BY id DESC
+                """
+            ).fetchall()
 
-        blog_details = conn.execute(
-        """
-            SELECT blog_details FROM blog_data ORDER BY id DESC
-        """).fetchall()
+            def cut(blogs):
+                content_map = {}  # Store previews mapped to blog ID
+                for blog in blogs:
+                    blog_id = blog[0]  # Assuming ID is the first column
+                    text = blog[2]  # Assuming blog content is the third column
 
-        def cut(content):
-            lis = []
-            for i in content:
-                a = i[0]
-                l = math.ceil(30 + math.log(len(a)) * 20)
-                a = a[0:l] + "..."
-                lis.append(a)
-            return lis
-        
-        content = cut(blog_details)
+                    preview_length = math.ceil(30 + math.log(len(text)) * 20)
+                    preview_text = text[:preview_length] + "..."
+                    
+                    content_map[blog_id] = preview_text  # Map preview to blog ID
+                
+                return content_map
 
-    return render_template('bloglist.html', blogs=blogs, content=content, name=name)
+            content_map = cut(blogs)
+        return render_template('bloglist.html', blogs=blogs, content_map=content_map)
+    else:
+        return redirect(url_for("admin"))
 
 @app.route('/view_blog/<blog_id>')
 def view_blog(blog_id):
@@ -174,7 +173,7 @@ def publish():
             file_path = os.path.join(blog_directory, filename)
             with open(file_path, 'w') as blog_file:
                 blog_file.write(f"""
-        <!DOCTYPE html>
+                <!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
@@ -183,31 +182,49 @@ def publish():
             <style>
                 body {{
                     font-family: Arial, sans-serif;
-                    margin: 40px;
+                    margin: 0;
                     padding: 20px;
                     background-color: #f8f9fa;
+                    display: flex;
+                    justify-content: center;
                 }}
                 .container {{
                     max-width: 800px;
-                    margin: auto;
-                    padding: 20px;
+                    width: 100%;
                     background: white;
+                    padding: 20px;
                     border-radius: 8px;
-                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
                 }}
                 h1 {{
                     color: #007bff;
+                    margin-bottom: 10px;
                 }}
                 .date {{
                     color: #6c757d;
                     font-size: 0.9em;
                     margin-bottom: 20px;
                 }}
+                .blog-image {{
+                    width: 100%;
+                    max-height: 400px;
+                    object-fit: cover;
+                    border-radius: 8px;
+                }}
+                p {{
+                    line-height: 1.6;
+                    color: #333;
+                    font-size: 1rem;
+                }}
+                /* Prevent focus highlight on mobile */
+                input, button {{
+                    -webkit-tap-highlight-color: transparent;
+                }}
             </style>
         </head>
         <body>
             <div class="container">
-                <img src="/static/uploads/{image_filename}" style="width: 70vw">
+                <img src="/static/uploads/{image_filename}" class="blog-image" alt="Blog Image">
                 <h1>{blog_title}</h1>
                 <p class="date">Published on: {blog_date}</p>
                 <p>{blog_details}</p>
@@ -251,6 +268,7 @@ def save_draft():
         """, (blog_title, blog_details))
         conn.commit()
     return redirect("dashboard")
+
 @app.route('/logout')
 def logout():
     session.pop("admin_logged_in", None)

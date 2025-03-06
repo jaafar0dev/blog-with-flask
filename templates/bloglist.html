@@ -8,7 +8,8 @@
       body {
         font-family: Arial, sans-serif;
         background-color: #f8f9fa;
-        margin: 40px;
+        margin: 0;
+        padding: 20px;
       }
       .container {
         max-width: 800px;
@@ -21,30 +22,72 @@
       h1 {
         color: #007bff;
         text-align: center;
+        margin-bottom: 20px;
       }
       .blog-list {
         list-style: none;
         padding: 0;
       }
       .blog-item {
+        display: flex;
+        align-items: flex-start;
         padding: 15px;
         border-bottom: 1px solid #ddd;
+        gap: 15px;
       }
       .blog-item:last-child {
         border-bottom: none;
       }
+      .blog-thumbnail {
+        width: 120px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 5px;
+        flex-shrink: 0;
+      }
+      .blog-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
       .blog-title {
-        font-size: 1.2rem;
+        font-size: 1rem;
         color: #333;
         text-decoration: none;
         font-weight: bold;
+        margin-bottom: 5px;
       }
       .blog-title:hover {
         color: #007bff;
       }
+      .blog-preview {
+        color: #555;
+        font-size: 0.9em;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        max-width: 100%;
+      }
       .blog-date {
         color: #6c757d;
-        font-size: 0.9em;
+        font-size: 0.8em;
+        margin-top: 5px;
+      }
+      @media (max-width: 600px) {
+        .blog-item {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .blog-thumbnail {
+          width: 100%;
+          height: auto;
+        }
+        .blog-content {
+          width: 100%;
+        }
       }
     </style>
   </head>
@@ -56,28 +99,29 @@
       <h1>My Blog</h1>
       {% endif %} {% if blogs %}
       <ul class="blog-list">
-        {% for blog in blogs %} {% for content in content %}
+        {% for blog in blogs %}
         <li class="blog-item">
           <img
             src="{{ url_for('static', filename='uploads/' + blog[5]) }}"
-            width="150"
+            class="blog-thumbnail"
             alt="Blog Thumbnail"
           />
-          <a
-            href="{{ url_for('view_blog', blog_id=blog[4]) }}"
-            class="blog-title"
-            >{{ blog[1] }}</a
-          >
-          <p>{{content}}</p>
-          <p class="blog-date">Published on: {{ blog[3] }}</p>
+          <div class="blog-content">
+            <a
+              href="{{ url_for('view_blog', blog_id=blog[4]) }}"
+              class="blog-title"
+            >
+              {{ blog[1] }}
+            </a>
+            <p class="blog-preview">{{ content_map[blog[0]] }}</p>
+            <p class="blog-date">Published on: {{ blog[3] }}</p>
+          </div>
         </li>
-        {% endfor %} {% endfor %}
+        {% endfor %}
       </ul>
-      {% else %} {% if name %}
-      <p>{{name}} hasn't made any blog posts yet.</p>
       {% else %}
-      <p>You haven't made any blog posts yet!</p>
-      {% endif %} {% endif %}
+      <p>{{ name }} hasn't made any blog posts yet.</p>
+      {% endif %}
     </div>
   </body>
 </html>
